@@ -19,13 +19,55 @@
 // is probably because you have denied permission for location sharing.
 
 var map;
+var MY_MAPTYPE_ID = 'custom_style';
 
 function initialize() {
+
+  var featureOpts = [
+    {
+      stylers: [
+        { hue: '#890000' },
+        { visibility: 'simplified' },
+        { gamma: 0.5 },
+        { weight: 0.5 }
+      ]
+    },
+    {
+      elementType: 'labels',
+      stylers: [
+        { visibility: 'on' },
+        { saturation: -100 },
+       
+      ]
+    },
+    {
+      featureType: 'water',
+      stylers: [
+        { color: '#890000' }
+      ]
+    }
+  ];
+
   var mapOptions = {
-    zoom: 15
+    zoom: 16,
+     mapTypeControlOptions: {
+      mapTypeIds: [google.maps.MapTypeId.ROADMAP, MY_MAPTYPE_ID]
+    },
+    mapTypeId: MY_MAPTYPE_ID
   };
   map = new google.maps.Map(document.getElementById('map-canvas'),
       mapOptions);
+
+
+
+  var styledMapOptions = {
+    name: 'Custom Style'
+
+   };
+
+   var customMapType = new google.maps.StyledMapType(featureOpts, styledMapOptions);
+
+  map.mapTypes.set(MY_MAPTYPE_ID, customMapType);
 
   // Try HTML5 geolocation
   if(navigator.geolocation) {
@@ -33,11 +75,29 @@ function initialize() {
       var pos = new google.maps.LatLng(position.coords.latitude,
                                        position.coords.longitude);
 
-      var infowindow = new google.maps.InfoWindow({
+      /*var infowindow = new google.maps.InfoWindow({
         map: map,
         position: pos,
         content: 'Esta es mi posición actual. :P'
+      });*/
+
+      var marker = new google.maps.Marker({
+          position: pos,
+          animation: google.maps.Animation.DROP,
+          map: map,
+          title: 'Esta es mi casa.'
       });
+      google.maps.event.addListener(marker, 'click', toggleBounce);
+
+      function toggleBounce() {
+
+        if (marker.getAnimation() != null) {
+          marker.setAnimation(null);
+        } else {
+          marker.setAnimation(google.maps.Animation.BOUNCE);
+        }
+      }
+
 
       map.setCenter(pos);
     }, function() {
@@ -48,6 +108,8 @@ function initialize() {
     handleNoGeolocation(false);
   }
 }
+
+
 
 function handleNoGeolocation(errorFlag) {
   if (errorFlag) {
